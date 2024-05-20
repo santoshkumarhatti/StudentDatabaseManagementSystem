@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Result Report Card</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      background-image: url('spot_images.jpeg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h4>Student Result Report Card</h4>
+      </div>
+      <div class="card-body">
+        <!-- Display Result Here -->
+        <div id="resultCard">
+          <!-- Result content will be displayed here -->
+        </div>
+        <!-- Download button for PDF -->
+        <button id="downloadButton" class="btn btn-primary" disabled>Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Firebase and other libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyCpxJEcYTXPj_aDQSsmJYw8pnDQyGu4EAI",
+      authDomain: "ev-web-santu.firebaseapp.com",
+      databaseURL: "https://ev-web-santu-default-rtdb.firebaseio.com",
+      projectId: "ev-web-santu",
+      storageBucket: "ev-web-santu.appspot.com",
+      messagingSenderId: "ev-web-santu.appspot.com",
+      appId: "1:742291728709:web:ec4bcc85abc154898bf62c"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Function to fetch and display the result based on USN
+    function displayResultByUSN() {
+      // Get the USN input
+      var usnInput = prompt("Enter USN (University Serial Number):");
+      if (!usnInput) return;
+
+      // Fetch the result from Firebase
+      var database = firebase.database();
+      var resultsRef = database.ref("student-results/" + usnInput);
+      resultsRef.once("value", function(snapshot) {
+        var resultData = snapshot.val();
+        if (resultData) {
+          // Display the result data on the page
+          displayResult(resultData);
+          // Enable the download button
+          document.getElementById("downloadButton").disabled = false;
+        } else {
+          // Display a message if the USN doesn't exist
+          document.getElementById("resultCard").innerHTML = "<p>Student with the provided USN not found.</p>";
+          // Disable the download button
+          document.getElementById("downloadButton").disabled = true;
+        }
+      });
+    }
+
+    // Function to display the result on the page
+    function displayResult(resultData) {
+      var studentDetails = resultData.studentDetails;
+      var subjectDetails = resultData.subjectDetails;
+
+      // Create the report card HTML content
+      var reportCardHTML = `
+        <h5>Student Details</h5>
+        <p><strong>Name:</strong> ${studentDetails.name}</p>
+        <p><strong>USN:</strong> ${studentDetails.usn}</p>
+        <p><strong>Class:</strong> ${studentDetails.class}</p>
+        <p><strong>Section:</strong> ${studentDetails.section}</p>
+        <p><strong>Branch:</strong> ${studentDetails.branch}</p>
+
+        <h5>Subject Scores</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      // Iterate through subject details and add rows to the table
+      for (var subject in subjectDetails) {
+        var score = subjectDetails[subject];
+        reportCardHTML += `
+            <tr>
+              <td>${subject}</td>
+              <td>${score}</td>
+            </tr>
+        `;
+      }
+
+      // Close the table and append to the report card content
+      reportCardHTML += `
+          </tbody>
+        </table>
+      `;
+
+      // Display the report card
+      document.getElementById("resultCard").innerHTML = reportCardHTML;
+    }
+
+    // Call the function to fetch and display the result when the page loads
+    window.onload = displayResultByUSN;
+
+    // Function to generate and download the PDF with a screenshot
+    document.getElementById("downloadButton").addEventListener("click", function () {
+      var doc = new jsPDF();
+
+      // Add content to the PDF
+      doc.text("Student Result Report Card", 10, 10);
+
+      // Capture the resultCard div as an image using html2canvas
+      html2canvas(document.querySelector("#resultCard")).then(function (canvas) {
+        var imgData = canvas.toDataURL("image/png");
+
+        // Add the image to the PDF
+        doc.addImage(imgData, "PNG", 10, 20, 190, 100); // Adjust the position and dimensions as needed
+
+        // Add the table with subject scores to the PDF
+        var table = document.querySelector("table");
+        var data = doc.autoTableHtmlToJson(table);
+        doc.autoTable({
+          head: [["Subject", "Score"]],
+          body: data,
+          startY: 130 // Adjust the startY position after the image
+        });
+
+        // Save the PDF with a specific name
+        doc.save("result_report_card.pdf");
+      });
+    });
+  </script>
+</body>
+</html>

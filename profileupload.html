@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Profile Upload System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      background-image: url('spot_images.jpeg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h4>Student Profile Upload System</h4>
+      </div>
+      <div class="card-body">
+        <form id="myForm">
+          <!-- Email Input -->
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter student's email">
+          </div>
+
+          <!-- Student Profile Section -->
+          <div id="studentProfileSection">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" id="name" placeholder="Enter student's name">
+            </div>
+            <div class="form-group">
+              <label for="usn">USN (University Serial Number)</label>
+              <input type="text" class="form-control" id="usn" placeholder="Enter student's USN">
+            </div>
+            <div class="form-group">
+              <label for="class">Class</label>
+              <input type="text" class="form-control" id="class" placeholder="Enter student's class">
+            </div>
+            <div class="form-group">
+              <label for="section">Section</label>
+              <input type="text" class="form-control" id="section" placeholder="Enter student's section">
+            </div>
+            <div class="form-group">
+              <label for="branch">Branch</label>
+              <input type="text" class="form-control" id="branch" placeholder="Enter student's branch">
+            </div>
+            <div class="form-group">
+              <label for="semester">Current Semester</label>
+              <input type="text" class="form-control" id="semester" placeholder="Enter student's current semester">
+            </div>
+            <div class="form-group">
+              <label for="studentId">Student ID</label>
+              <input type="text" class="form-control" id="studentId" placeholder="Enter student's ID">
+            </div>
+            <div class="form-group">
+              <label for="fees">Fees</label>
+              <input type="text" class="form-control" id="fees" placeholder="Enter student's fees">
+            </div>
+            <div class="form-group">
+              <label for="backlogs">Backlogs</label>
+              <input type="text" class="form-control" id="backlogs" placeholder="Enter student's backlogs">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Upload Profile</button>
+            <div id="thankYouMessage" style="display: none; text-align: center; margin-top: 1rem;">
+              <p>Profile uploaded successfully!</p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Firebase and other libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyCpxJEcYTXPj_aDQSsmJYw8pnDQyGu4EAI",
+      authDomain: "ev-web-santu.firebaseapp.com",
+      databaseURL: "https://ev-web-santu-default-rtdb.firebaseio.com",
+      projectId: "ev-web-santu",
+      storageBucket: "ev-web-santu.appspot.com",
+      messagingSenderId: "ev-web-santu.appspot.com",
+      appId: "1:742291728709:web:ec4bcc85abc154898bf62c"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Function to enable access to the authenticated user
+    function enableAccess() {
+      // Add an event listener to the form submission
+      document.getElementById("myForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the form from being submitted through traditional means
+
+        // Get the input values
+        var email = document.getElementById("email").value;
+        var name = document.getElementById("name").value;
+        var usn = document.getElementById("usn").value;
+        var studentClass = document.getElementById("class").value;
+        var section = document.getElementById("section").value;
+        var branch = document.getElementById("branch").value;
+        var semester = document.getElementById("semester").value;
+        var studentId = document.getElementById("studentId").value;
+        var fees = document.getElementById("fees").value;
+        var backlogs = document.getElementById("backlogs").value;
+
+        // Create an object for student profile
+        var studentProfile = {
+          email: email,
+          name: name,
+          usn: usn,
+          class: studentClass,
+          section: section,
+          branch: branch,
+          semester: semester,
+          studentId: studentId,
+          fees: fees,
+          backlogs: backlogs
+        };
+
+        // Store the student profile data under the user's email
+        var emailWithSpecialCharsReplaced = email; // Replace special characters in email
+        var profileRef = firebase.database().ref("user-profiles/" + emailWithSpecialCharsReplaced);
+        profileRef.set(studentProfile)
+          .then(function() {
+            // Clear the form inputs
+            document.getElementById("myForm").reset();
+
+            // Display the "Thank you" message
+            document.getElementById("thankYouMessage").style.display = "block";
+          })
+          .catch(function(error) {
+            // Handle errors
+            console.error("Error uploading profile:", error);
+          });
+      });
+    }
+    enableAccess();
+  </script>
+</body>
+</html>

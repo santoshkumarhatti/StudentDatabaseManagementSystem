@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Result Upload System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      background-image: url('spot_images.jpeg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h4>Student Result Upload System</h4>
+      </div>
+      <div class="card-body">
+        <form id="myForm">
+          <!-- Student Details Section -->
+          <div id="studentDetailsSection">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" id="name" placeholder="Enter student's name">
+            </div>
+            <div class="form-group">
+              <label for="usn">USN (University Serial Number)</label>
+              <input type="text" class="form-control" id="usn" placeholder="Enter student's USN">
+            </div>
+            <div class="form-group">
+              <label for="class">Class</label>
+              <input type="text" class="form-control" id="class" placeholder="Enter student's class">
+            </div>
+            <div class="form-group">
+              <label for="section">Section</label>
+              <input type="text" class="form-control" id="section" placeholder="Enter student's section">
+            </div>
+            <div class="form-group">
+              <label for="branch">Branch</label>
+              <input type="text" class="form-control" id="branch" placeholder="Enter student's branch">
+            </div>
+            <button type="button" class="btn btn-primary btn-block" onclick="showSubjectFields()">Next</button>
+          </div>
+
+          <!-- Subject Details Section 1 -->
+          <div id="subjectDetailsSection1" style="display: none;">
+            <!-- Subject 1 Score -->
+            <div class="form-group">
+              <label for="subject1Score">Subject 1 Score</label>
+              <input type="text" class="form-control" id="subject1Score" placeholder="Enter subject 1 score">
+            </div>
+
+            <!-- Subject 2 Score -->
+            <div class="form-group">
+              <label for="subject2Score">Subject 2 Score</label>
+              <input type="text" class="form-control" id="subject2Score" placeholder="Enter subject 2 score">
+            </div>
+
+            <!-- Subject 3 Score -->
+            <div class="form-group">
+              <label for="subject3Score">Subject 3 Score</label>
+              <input type="text" class="form-control" id="subject3Score" placeholder="Enter subject 3 score">
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block" onclick="showSubjectFields2()">Next</button>
+          </div>
+
+          <!-- Subject Details Section 2 -->
+          <div id="subjectDetailsSection2" style="display: none;">
+            <!-- Subject 4 Score -->
+            <div class="form-group">
+              <label for="subject4Score">Subject 4 Score</label>
+              <input type="text" class="form-control" id="subject4Score" placeholder="Enter subject 4 score">
+            </div>
+
+            <!-- Subject 5 Score -->
+            <div class="form-group">
+              <label for="subject5Score">Subject 5 Score</label>
+              <input type="text" class="form-control" id="subject5Score" placeholder="Enter subject 5 score">
+            </div>
+
+            <!-- Subject 6 Score -->
+            <div class="form-group">
+              <label for="subject6Score">Subject 6 Score</label>
+              <input type="text" class="form-control" id="subject6Score" placeholder="Enter subject 6 score">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Upload Result</button>
+            <div id="thankYouMessage" style="display: none; text-align: center; margin-top: 1rem;">
+              <p>Result uploaded successfully!</p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+  <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyCpxJEcYTXPj_aDQSsmJYw8pnDQyGu4EAI",
+      authDomain: "ev-web-santu.firebaseapp.com",
+      databaseURL: "https://ev-web-santu-default-rtdb.firebaseio.com",
+      projectId: "ev-web-santu",
+      storageBucket: "ev-web-santu.appspot.com",
+      messagingSenderId: "ev-web-santu.appspot.com",
+      appId: "1:742291728709:web:ec4bcc85abc154898bf62c"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Function to show subject fields (Section 1) and hide student details
+    function showSubjectFields() {
+      document.getElementById("studentDetailsSection").style.display = "none";
+      document.getElementById("subjectDetailsSection1").style.display = "block";
+    }
+
+    // Function to show subject fields (Section 2) and hide subject fields (Section 1)
+    function showSubjectFields2() {
+      document.getElementById("subjectDetailsSection1").style.display = "none";
+      document.getElementById("subjectDetailsSection2").style.display = "block";
+    }
+
+    // Function to enable access to the authenticated user
+    function enableAccess() {
+      // Add an event listener to the form submission
+      document.getElementById("myForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the form from being submitted through traditional means
+
+        // Get the input values for student details
+        var name = document.getElementById("name").value;
+        var usn = document.getElementById("usn").value;
+        var studentClass = document.getElementById("class").value;
+        var section = document.getElementById("section").value;
+        var branch = document.getElementById("branch").value;
+
+        // Create an object for student details
+        var studentDetails = {
+          name: name,
+          usn: usn,
+          class: studentClass,
+          section: section,
+          branch: branch
+        };
+
+        // Get the input values for subject details (Section 1)
+        var subject1Score = parseFloat(document.getElementById("subject1Score").value);
+        var subject2Score = parseFloat(document.getElementById("subject2Score").value);
+        var subject3Score = parseFloat(document.getElementById("subject3Score").value);
+
+        // Get the input values for subject details (Section 2)
+        var subject4Score = parseFloat(document.getElementById("subject4Score").value);
+        var subject5Score = parseFloat(document.getElementById("subject5Score").value);
+        var subject6Score = parseFloat(document.getElementById("subject6Score").value);
+
+        // Create an object for subject details
+        var subjectDetails = {
+          subject1Score: subject1Score,
+          subject2Score: subject2Score,
+          subject3Score: subject3Score,
+          subject4Score: subject4Score,
+          subject5Score: subject5Score,
+          subject6Score: subject6Score
+        };
+
+        // Combine both student and subject details
+        var resultData = {
+          studentDetails: studentDetails,
+          subjectDetails: subjectDetails
+        };
+
+        // Save the result data to the Firebase database
+        var database = firebase.database();
+        var resultsRef = database.ref("student-results/" + usn);
+        resultsRef.set(resultData);
+
+        // Clear the form inputs
+        document.getElementById("myForm").reset();
+
+        // Display the "Thank you" message
+        document.getElementById("thankYouMessage").style.display = "block";
+        document.getElementById("subjectDetailsSection1").style.display = "none";
+        document.getElementById("subjectDetailsSection2").style.display = "none";
+        document.getElementById("studentDetailsSection").style.display = "block";
+      });
+    }
+    enableAccess();
+  </script>
+</body>
+</html>
